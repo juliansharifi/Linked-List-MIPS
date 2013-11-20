@@ -74,23 +74,23 @@ Loop_main:
         move 	   $a0, $v0
         jal        trim
         jal        strlen
-        move 	   $a0, $s1      # prep for print
-        jal  	   print_string
+        #move 	   $a0, $s1      # prep for print
+        #jal  	   print_string
         addi       $t0, $zero, 1 
         slt        $t1, $v0, $t0                    #if less than 2 $t1 gets 0 
         bne        $t1, $zero, Exit_loop_main       #if $t1 != 0 (then it is = 1) jump to exit
         beq        $v0, $t0, Exit_loop_main
        
-       # move 	   $a0, $s0  # pass head of list into a0 to preapre for insert
-       # move	   $a1, $s1  # pass address of string to store
-       # jal        insert
-        move      $s0, $v0
+        move 	   $a0, $s0  # pass head of list into a0 to preapre for insert
+        move	   $a1, $s1  # pass address of string to store
+        jal        plain_insert
+       # move      $s0, $v0
         j         Loop_main
         
 Exit_loop_main:
-      #  move        $a0, $s0
-       # jal         print_list
-      #  jal         print_newline
+        move        $a0, $s0
+        jal         print_list
+        jal         print_newline
 #        lines commented out - not needed in simulation:
 #        lw         $s1, 8($sp)
 #        lw         $s0, 4($sp)
@@ -145,7 +145,7 @@ strloop:
         addi   $s3, $s3, 1                         #incriment s3 by 1 each time to store length of string
         j      strloop                             #jump back to beginning
 replace:        
-        add    $t2, $t2, $zero                     #$t2 is set to zero, ASCII value for null terminator
+        li     $t2, 0                     #$t2 is set to zero, ASCII value for null terminator
         sb     $t2, 0($a0)                         #$t2 is stored into the byte starting at $a0
         lb     $t1, 0($a0)                         #test byte to make sure it was changed
         jr     $ra                                 #jump back to caller
@@ -220,23 +220,27 @@ plain_insert:
 # print_list: given address of front of list in $a0
 # prints each string in list, one per line, in order
 print_list:
-        add        $sp, $sp, -8
+        #add        $sp, $sp, -8
+        #sw         $ra, 0($sp)
+        #sw         $s0, 4($sp)
+        #move       $s0, $a0
+        #beq        $a0, $zero, Exit_print_list 
+        
+        add        $sp, $sp, -4
         sw         $ra, 0($sp)
-        sw         $s0, 4($sp)
-        move      $s0, $a0
-        beq        $a0, $zero, Exit_print_list 
       
 Loop_print_list:
-        la         $t0, 0($s0)
-        la         $a0, 0($s0)
+        #move       $t0, $s0
+        move       $a0, $s0
+        lw	   $t5, 0($a0) # Check to see what is in string
         jal        print_string
         jal        print_newline
         #lb         $t0, 0($s0)            # node = node->next
-        addi       $s0, $s0, 4
-        lb	   $t2, 4($s0)
+        lw         $s0,  4($s0)
+        lw	   $t2, 0($s0)
         bne        $t2, $zero, Loop_print_list
 Exit_print_list:
-        lw         $s0, 4($sp)
+        #lw         $s0, 4($sp)
         lw         $ra, 0($sp)
         addi       $sp, $sp, 8
         jr         $ra
